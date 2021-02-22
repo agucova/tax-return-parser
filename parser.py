@@ -36,7 +36,7 @@ def check_rules(doc: str, rules: List[Tuple[str, Pattern]]) -> List[bool]:
     """ Returns the boolean value of each rule given over the document in a list."""
     result = []
     for _, query in rules:
-        result.append(bool(query.search(doc)))
+        result.append(int(bool(query.search(doc))))
 
     return result
 
@@ -53,7 +53,7 @@ def process_doc(file_path: str, rules: List[Tuple[str, Pattern]]) -> List[Any]:
     # Preprocess doc. Replace newlines with spaces -> Delete tabs -> Delete repeated spaces
     doc = re.sub(" +", " ", doc.replace("\n", " ").replace("\t", ""))
 
-    # Return the ready row
+    # Return the resulting row
     return list([file_path, doc_size] + check_rules(doc, rules))
 
 
@@ -100,7 +100,7 @@ def main():
         print(f"[INFO] {n_ready}/{n_files} ready.")
         while len(not_ready):
             ready_id, not_ready = ray.wait(not_ready)
-            wr.writerow(list(ray.get(ready_id)))
+            wr.writerows(list(ray.get(ready_id)))
             n_ready += 1
 
             if n_ready % 50 == 0:
