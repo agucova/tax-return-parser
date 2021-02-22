@@ -5,6 +5,7 @@ Parse tax return documents and log matches.
 import csv
 import glob
 import re
+import regex as re2
 import ray
 import sys
 from typing import Any, List, Pattern, Tuple, Union
@@ -107,7 +108,7 @@ def main():
         not_ready = []
 
         # Compile the MDA Filter regex if needed
-        filter_mda_re = re.compile(r"(?<=item 7)(.*)(?=item 8)", re.DOTALL) if filter_mda else False
+        filter_mda_re = re2.compile(r"(?<=item 7)(.*)(?=item 8)", re2.DOTALL, re2.REVERSE) if filter_mda else False
 
         # Queue processing for each file in the cluster
         for file_path in file_list:
