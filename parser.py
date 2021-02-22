@@ -23,7 +23,10 @@ def query_to_regex(query: str) -> Pattern:
     Please forgive the mumbo jumbo."""
     return re.compile(
         "|".join(
+            map(
+                lambda n: r"\b" + n + r"\b",
                 query.strip().strip(".").replace("*", r"?\w+").split(" OR "),
+            )
         ),
         re.IGNORECASE
     )
