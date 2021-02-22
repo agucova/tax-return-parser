@@ -7,7 +7,7 @@ import glob
 import re
 import ray
 import sys
-from typing import Any, List, Pattern, Tuple
+from typing import Any, List, Pattern, Tuple, Union
 from rules import query_rules
 
 
@@ -16,6 +16,9 @@ TARGET_FILES = r"./tax_returns/*"
 
 # File to output the analysis
 OUTPUT_FILE = "freq_analysis.csv"
+
+# Whether to reduce scope to just the MD&A (experimental)
+filter_mda = True
 
 
 def query_to_regex(query: str) -> Pattern:
@@ -41,7 +44,7 @@ def check_rules(doc: str, rules: List[Tuple[str, Pattern]]) -> List[bool]:
 
 
 @ray.remote
-def process_doc(file_path: str, rules: List[Tuple[str, Pattern]]) -> List[Any]:
+def process_doc(file_path: str, rules: List[Tuple[str, Pattern]], filter_mda_re: Union[Pattern, bool] = False) -> List[Any]:
     # Load file
     with open(file_path, "r", encoding="UTF-8", errors="ignore") as file:
         doc = file.read()
@@ -51,6 +54,17 @@ def process_doc(file_path: str, rules: List[Tuple[str, Pattern]]) -> List[Any]:
 
     # Preprocess doc. Replace newlines with spaces -> Delete tabs -> Delete repeated spaces -> All document to lowercase
     doc = re.sub(" +", " ", doc.replace("\n", " ").replace("\t", "")).lower()
+
+    # If the MD&A filter was given
+    if filter_mda_re:
+        # Filter the document
+        mda_match = filter_mda_re.search(doc)
+        # If no MD&A found, skip
+        if not mda_match:
+            return []
+
+        # Get the filtered doc
+        doc = mda_match.group()
 
     # Return the resulting row
     return list([file_path, doc_size] + check_rules(doc, rules))
@@ -91,16 +105,22 @@ def main():
 
         print(f"[INFO] Queueing {n_files} parsing tasks in the ray cluster.")
         not_ready = []
+
+        # Compile the MDA Filter regex if needed
+        filter_mda_re = re.compile(r"(?<=item 7)(.*)(?=item 8)", re.DOTALL) if filter_mda else False
+
         # Queue processing for each file in the cluster
         for file_path in file_list:
-            not_ready.append(process_doc.remote(file_path, rules))
+            not_ready.append(process_doc.remote(file_path, rules, filter_mda_re))
 
         # Await finished tasks. As soon as a file is ready, write to the csv.
         n_ready = 0
         print(f"[INFO] {n_ready}/{n_files} ready.")
         while len(not_ready):
             ready_id, not_ready = ray.wait(not_ready)
-            wr.writerows(list(ray.get(ready_id)))
+            ready = ray.get(ready_id)
+            if ready:
+                wr.writerows(ready)
             n_ready += 1
 
             # Periodical reporting of progress.
