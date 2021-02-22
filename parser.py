@@ -27,8 +27,7 @@ def query_to_regex(query: str) -> Pattern:
                 lambda n: r"\b" + n + r"\b",
                 query.strip().strip(".").replace("*", r"?\w+").split(" OR "),
             )
-        ),
-        re.IGNORECASE
+        )
     )
 
 
@@ -50,8 +49,8 @@ def process_doc(file_path: str, rules: List[Tuple[str, Pattern]]) -> List[Any]:
     # How big is the parsed file?
     doc_size = len(doc)
 
-    # Preprocess doc. Replace newlines with spaces -> Delete tabs -> Delete repeated spaces
-    doc = re.sub(" +", " ", doc.replace("\n", " ").replace("\t", ""))
+    # Preprocess doc. Replace newlines with spaces -> Delete tabs -> Delete repeated spaces -> All document to lowercase
+    doc = re.sub(" +", " ", doc.replace("\n", " ").replace("\t", "")).lower()
 
     # Return the resulting row
     return list([file_path, doc_size] + check_rules(doc, rules))
@@ -104,6 +103,7 @@ def main():
             wr.writerows(list(ray.get(ready_id)))
             n_ready += 1
 
+            # Periodical reporting of progress.
             if n_ready % 50 == 0:
                 print(f"[INFO] {n_ready}/{n_files} ready.")
 
