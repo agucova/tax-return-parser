@@ -6,12 +6,13 @@ import csv
 import glob
 import re
 import ray
+import sys
 from typing import Any, List, Pattern, Tuple
 from rules import query_rules
 
 
 # Files to be parsed
-TARGET_FILES = r'./tax_returns/*/*/*/*'
+TARGET_FILES = r"./tax_returns/*"
 
 # File to output the analysis
 OUTPUT_FILE = "freq_analysis.csv"
@@ -22,10 +23,7 @@ def query_to_regex(query: str) -> Pattern:
     Please forgive the mumbo jumbo."""
     return re.compile(
         "|".join(
-            map(
-                lambda n: f"(?:{n})",
                 query.strip().strip(".").replace("*", r"?\w+").split(" OR "),
-            )
         ),
         re.IGNORECASE
     )
@@ -77,6 +75,7 @@ def main():
     file_list = glob.glob(TARGET_FILES)
     if not file_list:
         print("[ERROR] No files were found in the given TARGET_FILES.")
+        sys.exit()
 
     n_files = len(file_list)
     # Prepares a CSV writer to output the parsing
