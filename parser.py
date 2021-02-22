@@ -11,8 +11,7 @@ from rules import query_rules
 
 
 # Files to be parsed
-TARGET_FILES = r"./tax_returns/*"
-# TARGET_FILES = r'./tax_returns/*/*/*/*'
+TARGET_FILES = r'./tax_returns/*/*/*/*'
 
 # File to output the analysis
 OUTPUT_FILE = "freq_analysis.csv"
@@ -60,7 +59,7 @@ def process_doc(file_path: str, rules: List[Tuple[str, Pattern]]) -> List[Any]:
 def main():
     print("[INFO] Starting parser...")
 
-    # Initiate a local ray cluster for running processing in parallel
+    # Initiate a local ray cluster.
     ray.init(configure_logging=True, logging_format="[INFO] %(message)s")
 
     # Compile each rule from rules.py to its Regex counterpart.
@@ -69,10 +68,10 @@ def main():
     rules = list(map(lambda r: (r[0], query_to_regex(r[1])), query_rules))
     # Create a new list with only the name of each rule
     name_of_loaded_rules = list(map(lambda r: r[0], rules))
-    # Put rules in ray cluster
-    rules = ray.put(rules)
     # Print the rules loaded
     print(f"[INFO] Loaded rules: {name_of_loaded_rules}")
+    # Put rules in ray cluster
+    rules = ray.put(rules)
 
     # Uses the pattern in the TARGET_FILEs constant to find a list of files.
     file_list = glob.glob(TARGET_FILES)
