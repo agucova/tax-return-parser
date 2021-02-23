@@ -13,7 +13,9 @@ from rules import query_rules
 
 
 # Files to be parsed
-TARGET_FILES = r"./tax_returns/*"
+# Use this constant for the EDGAR dataset:
+TARGET_FILES = r"./tax_returns/*/*/*/*"
+# TARGET_FILES = r"./tax_returns/*"
 
 # File to output the analysis
 OUTPUT_FILE = "freq_analysis.csv"
@@ -94,6 +96,7 @@ def main():
         print("[ERROR] No files were found in the given TARGET_FILES.")
         sys.exit()
 
+    # Save the length of the file
     n_files = len(file_list)
     # Prepares a CSV writer to output the parsing
     with open(OUTPUT_FILE, "w") as f_out:
