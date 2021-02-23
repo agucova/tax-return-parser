@@ -14,8 +14,8 @@ from rules import query_rules
 
 # Files to be parsed
 # Use this constant for the EDGAR dataset:
-TARGET_FILES = r"./tax_returns/*/*/*/*"
-# TARGET_FILES = r"./tax_returns/*"
+# TARGET_FILES = r"./tax_returns/*/*/*/*"
+TARGET_FILES = r"./tax_returns/*"
 
 # File to output the analysis
 OUTPUT_FILE = "freq_analysis.csv"
@@ -114,8 +114,15 @@ def main():
         filter_mda_re = re2.compile(r"(?<=item 7)(.*)(?=item 8)", re2.DOTALL, re2.REVERSE) if filter_mda else False
 
         # Queue processing for each file in the cluster
+        n_loaded = 0
+        print("[INFO] Loaded {n_loaded}/{n_files} tasks.")
         for file_path in file_list:
             not_ready.append(process_doc.remote(file_path, rules, filter_mda_re))
+            n_loaded += 1
+
+            if n_loaded % 500 == 0:
+                print("[INFO] Loaded {n_loaded}/{n_files} tasks.")
+        print("[INFO] Loaded {n_loaded}/{n_files} tasks.")
 
         # Await finished tasks. As soon as a file is ready, write to the csv.
         n_ready = 0
@@ -129,7 +136,7 @@ def main():
 
             # Periodical reporting of progress.
             if n_ready % 50 == 0:
-                print(f"[INFO] {n_ready}/{n_files} ready.")
+                print(f"[INFO] {n_ready}/{n_files} files ready.")
 
         print(f"[INFO] {n_ready}/{n_files} ready.")
         print("[INFO] Parsing finished successfully.")
