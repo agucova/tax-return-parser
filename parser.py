@@ -37,7 +37,7 @@ def query_to_regex(query: str) -> Pattern:
     )
 
 
-def check_rules(doc: str, rules: List[Tuple[str, Pattern]]) -> List[bool]:
+def check_rules(doc: str, rules: List[Tuple[str, Pattern]]) -> List[int]:
     """ Returns the boolean value of each rule given over the document in a list."""
     result = []
     for _, query in rules:
