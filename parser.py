@@ -120,7 +120,7 @@ def main():
                 not_ready.append(process_doc.remote(file_path, rules, filter_mda_re))
                 n_loaded += 1
                 step()
-        print(f"[INFO] Loaded {n_files} tasks.")
+        print(f"[INFO] Queued {n_files} tasks.")
 
         # Await finished tasks. As soon as a file is ready, write to the csv.
         n_ready = 0
