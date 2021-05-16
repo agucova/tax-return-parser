@@ -80,7 +80,7 @@ def main():
     
     # Initiate a local ray cluster.
     ray_port = getenv("RAYPORT") or "8265"
-    ray.init(configure_logging=True, logging_format="[INFO] %(message)s", dashboard_port=ray_port)
+    ray.init(configure_logging=True, logging_format="[INFO] %(message)s", dashboard_port=int(ray_port))
 
     # Compile each rule from rules.py to its Regex counterpart.
     # Note that map is a function that applies a given function to each element of a list.
