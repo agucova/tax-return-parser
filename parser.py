@@ -10,7 +10,7 @@ import ray
 import sys
 from typing import Any, List, Pattern, Tuple, Union
 from rules import query_rules
-
+from alive_progress import alive_bar
 
 # Files to be parsed
 # Use this constant for the EDGAR dataset:
@@ -115,30 +115,27 @@ def main():
 
         # Queue processing for each file in the cluster
         n_loaded = 0
-        print("[INFO] Loaded {n_loaded}/{n_files} tasks.")
-        for file_path in file_list:
-            not_ready.append(process_doc.remote(file_path, rules, filter_mda_re))
-            n_loaded += 1
-
-            if n_loaded % 500 == 0:
-                print("[INFO] Loaded {n_loaded}/{n_files} tasks.")
-        print("[INFO] Loaded {n_loaded}/{n_files} tasks.")
+        with alive_bar(n_files) as step:
+            for file_path in file_list:
+                not_ready.append(process_doc.remote(file_path, rules, filter_mda_re))
+                n_loaded += 1
+                step()
+        print(f"[INFO] Loaded {n_files} tasks.")
 
         # Await finished tasks. As soon as a file is ready, write to the csv.
         n_ready = 0
-        print(f"[INFO] {n_ready}/{n_files} ready.")
-        while len(not_ready):
-            ready_id, not_ready = ray.wait(not_ready)
-            ready = ray.get(ready_id)
-            if ready:
-                wr.writerows(ready)
-            n_ready += 1
+        print(f"[INFO] Processing {n_files} files in the ray cluster.")
+        with alive_bar(n_files, force_tty=True) as step:
+            while len(not_ready):
+                ready_id, not_ready = ray.wait(not_ready)
+                ready = ray.get(ready_id)
+                if ready:
+                    wr.writerows(ready)
+                    step()
+                n_ready += 1
 
-            # Periodical reporting of progress.
-            if n_ready % 50 == 0:
-                print(f"[INFO] {n_ready}/{n_files} files ready.")
 
-        print(f"[INFO] {n_ready}/{n_files} ready.")
+        print(f"[INFO] {n_ready}/{n_files} processed.")
         print("[INFO] Parsing finished successfully.")
 
 
