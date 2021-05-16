@@ -12,6 +12,11 @@ MAIN=parser.py
 module purge
 module load python/intel/3.8.6
 
+RAYPORT=$(shuf -i 10000-65500 -n 1)
+/usr/bin/ssh -N -f -R $RAYPORT:localhost:$RAYPORT log-1
+/usr/bin/ssh -N -f -R $RAYPORT:localhost:$RAYPORT log-2
+/usr/bin/ssh -N -f -R $RAYPORT:localhost:$RAYPORT log-3
+
 source $SCRATCH/.env/bin/activate
 cd $PROJECT_DIR && $SCRATCH/poetry/bin/poetry install
 /usr/bin/time -v $SCRATCH/.env/bin/python3 -u $PROJECT_DIR/$MAIN

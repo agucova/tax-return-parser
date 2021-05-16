@@ -15,6 +15,7 @@ from alive_progress import alive_bar
 # Files to be parsed
 # Use this constant for the EDGAR dataset:
 # TARGET_FILES = r"./tax_returns/*/*/*/*"
+# TARGET_FILES = r"/Volumes/G-DRIVE mobile USB-C/EDGAR/10-X_C_2006-2010/2009/*/*"
 TARGET_FILES = r"./tax_returns/*"
 
 # File to output the analysis
