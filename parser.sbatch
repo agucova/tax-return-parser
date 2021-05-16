@@ -12,7 +12,7 @@ MAIN=parser.py
 module purge
 module load python/intel/3.8.6
 
-RAYPORT=$(shuf -i 10000-65500 -n 1)
+export RAYPORT=$(shuf -i 10000-65500 -n 1)
 /usr/bin/ssh -N -f -R $RAYPORT:localhost:$RAYPORT log-1
 /usr/bin/ssh -N -f -R $RAYPORT:localhost:$RAYPORT log-2
 /usr/bin/ssh -N -f -R $RAYPORT:localhost:$RAYPORT log-3
