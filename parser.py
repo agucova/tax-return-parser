@@ -11,6 +11,7 @@ import sys
 from typing import Any, List, Pattern, Tuple, Union
 from rules import query_rules
 from alive_progress import alive_bar
+from os import getenv
 
 # Files to be parsed
 # Use this constant for the EDGAR dataset:
@@ -76,9 +77,10 @@ def process_doc(file_path: str, rules: List[Tuple[str, Pattern]], filter_mda_re:
 
 def main():
     print("[INFO] Starting parser...")
-
+    
     # Initiate a local ray cluster.
-    ray.init(configure_logging=True, logging_format="[INFO] %(message)s")
+    ray_port = getenv("RAYPORT") or "8265"
+    ray.init(configure_logging=True, logging_format="[INFO] %(message)s", dashboard_port=ray_port)
 
     # Compile each rule from rules.py to its Regex counterpart.
     # Note that map is a function that applies a given function to each element of a list.
